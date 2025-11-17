@@ -12,6 +12,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, precision_score, recall_score, f1_score
 from sklearn.preprocessing import StandardScaler
 
+import streamlit as st
+
 ## Train.csv will contain the details of a subset of the passengers on board (891 to be exact)
 # and importantly, will reveal whether they survived or not, also known as the “ground truth”.
 
@@ -23,82 +25,179 @@ from sklearn.preprocessing import StandardScaler
 
 ## Load and explore the data using pandas (read train.csv and test.csv)
 
-train1 = pd.read_csv("C:/Users/Shreya Tanguturi/Desktop/PythonPersonalProjects/train.csv")
-test1 = pd.read_csv("C:/Users/Shreya Tanguturi/Desktop/PythonPersonalProjects/test.csv")
+@st.cache_data
+def load_data():
+    train1 = pd.read_csv("C:/Users/Shreya Tanguturi/Documents/GitHub/ML-DL-Portfolio/Machine Learning/train.csv")
+    test1 = pd.read_csv("C:/Users/Shreya Tanguturi/Documents/GitHub/ML-DL-Portfolio/Machine Learning/test.csv")
+    return train1, test1
 
 # check for missing values, distribution of features, how many survived vs died
 # Cabin has missing values
 
-# Extract the deck letter from the cabin, only first letter
-train1['Deck'] = train1['Cabin'].str[0]
-train1['Deck'] = train1['Deck'].fillna('U')
+@st.cache_data
+def preprocess_and_train():
+    train1, test1 = load_data()
+    # Extract the deck letter from the cabin, only first letter
+    train1['Deck'] = train1['Cabin'].str[0]
+    train1['Deck'] = train1['Deck'].fillna('U')
 
-test1['Deck'] = test1['Cabin'].str[0]
-test1['Deck'] = test1['Deck'].fillna('U')
-
-
-## encode Deck column as categorical for the model, as number (e.g., 1, 2, 8)
-train1['Deck'] = train1['Deck'].astype('category').cat.codes
-test1['Deck'] = test1['Deck'].astype('category').cat.codes
-
-#print(train1)
-
-## initiate simple model
-# pick a few intuitive features (e.g., Sex, Pclass, Age) and build a baseline classifer such as 
-# logistic regression or random forest
-# Logistic regression is primarily used for a binary classification model, 
-# predicts the probability of a categorical dependent variable (0 or 1)
+    test1['Deck'] = test1['Cabin'].str[0]
+    test1['Deck'] = test1['Deck'].fillna('U')
 
 
-## Age has many missing values, use fillna()
+    ## encode Deck column as categorical for the model, as number (e.g., 1, 2, 8)
+    train1['Deck'] = train1['Deck'].astype('category').cat.codes
+    test1['Deck'] = test1['Deck'].astype('category').cat.codes
 
-## fill missing numerical values (e.g., Age, Fare) with a median
-train1['Age'] = train1['Age'].fillna(train1['Age'].median())
-train1['Fare'] = train1['Fare'].fillna(train1['Fare'].median())
+    ## Age has many missing values, use fillna()
 
-test1['Age'] = test1['Age'].fillna(test1['Age'].median())
-test1['Fare'] = test1['Fare'].fillna(test1['Fare'].median())
+    ## fill missing numerical values (e.g., Age, Fare) with a median
+    train1['Age'] = train1['Age'].fillna(train1['Age'].median())
+    train1['Fare'] = train1['Fare'].fillna(train1['Fare'].median())
 
-## fill missing categorical values (e.g., Deck, Sex) with a placeholder
-train1['Deck'] = train1['Deck'].fillna('U')
-train1['Sex'] = train1['Sex'].fillna('unknown')
+    test1['Age'] = test1['Age'].fillna(test1['Age'].median())
+    test1['Fare'] = test1['Fare'].fillna(test1['Fare'].median())
 
-test1['Deck'] = test1['Deck'].fillna('U')
-test1['Sex'] = test1['Sex'].fillna('unknown')
+    ## fill missing categorical values (e.g., Deck, Sex) with a placeholder
+    train1['Deck'] = train1['Deck'].fillna('U')
+    train1['Sex'] = train1['Sex'].fillna('unknown')
 
-# Select features (x) and target (y)
-x = train1[['Pclass', 'Sex', 'Age', 'Fare', 'Deck']]
-y = train1['Survived']
+    test1['Deck'] = test1['Deck'].fillna('U')
+    test1['Sex'] = test1['Sex'].fillna('unknown')
+    
+    # Select features (x) and target (y)
+    x = train1[['Pclass', 'Sex', 'Age', 'Fare', 'Deck']]
+    y = train1['Survived']
 
-x_test_final = test1[['Pclass', 'Sex', 'Age', 'Fare', 'Deck']]
-#y = test1['Survived']
+    x_test_final = test1[['Pclass', 'Sex', 'Age', 'Fare', 'Deck']]
 
-## convert categorical features like 'Sex' to numeric
-x = pd.get_dummies(x, drop_first=True)
-x_test_final = pd.get_dummies(x_test_final, drop_first=True)
+    ## convert categorical features like 'Sex' to numeric
+    x = pd.get_dummies(x, drop_first=True)
+    x_test_final = pd.get_dummies(x_test_final, drop_first=True)
 
-# split data into training and testing sets to evaluate model's performance on unseen data
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+    # split data into training and testing sets to evaluate model's performance on unseen data
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
-## align test features with training features
-x_test_final = x_test_final.reindex(columns=x_train.columns, fill_value=0)
+    ## align test features with training features
+    x_test_final = x_test_final.reindex(columns=x_train.columns, fill_value=0)
 
-# initialize and train the model
-model = LogisticRegression(max_iter=1000)
-model.fit(x_train, y_train)
+    # initialize and train the model
+    model = LogisticRegression(max_iter=1000)
+    model.fit(x_train, y_train)
 
-#Predict
-y_pred_test = model.predict(x_test_final)
-print(y_pred_test)
+    #Predict
+    y_pred_test = model.predict(x_test_final)
+    print(y_pred_test)
 
-submission = pd.DataFrame({
-    'PassengerId': test1['PassengerId'],
-    'Survived':y_pred_test
-})
+    submission = pd.DataFrame({
+        'PassengerId': test1['PassengerId'],
+        'Survived':y_pred_test
+    })
 
-submission.to_csv("submission.csv", index=False)
-print("submission.csv created successfully!")
+    ## Metrics
+    accuracy = accuracy_score(y_test, y_pred_test)
+    precision = precision_score(y_test, y_pred_test)
+    recall = recall_score(y_test, y_pred_test)
+    f1 = f1_score(y_test, y_pred_test)
+    confusion = confusion_matrix(y_test, y_pred_test)
+    class_report = classification_report(y_test, y_pred_test)
 
+    return {
+        "train": train1,
+        "test": test1,
+        "model": model,
+        "submission": submission,
+        "metrics": {
+            "accuracy": acc,
+            "precision": prec,
+            "recall": rec,
+            "f1": f1,
+            "confusion_matrix": cm,
+            "classification_report": cls_report,
+        }
+    }
+
+def main():
+    st.title("Titanic Survival Prediction (Logistic Regression)")
+    st.write("Using the Titanic dataset and a logistic regression model to predict which passengers survived")
+
+    st.header("1. Data Overview")
+    train1, test1 = load_data()
+
+    st.subheader("Train data (first 5 rows)")
+    st.dataframe(train1.head())
+
+    st.subheader("Test data (first 5 rows)")
+    st.dataframe(test1.head())
+
+    if st.checkbox("Show basic info about missing values"):
+        st.subheader("Missing values in train.csv")
+        st.write(train1.isna().sum())
+        st.subheader("Missing values in test.csv")
+        st.write(test1.isna().sum())
+
+    st.header("2. Train Model & Evaluate")
+    if st.button("Train / Retrain model"):
+        with st.spinner("Training model..."):
+            results = preprocess_and_train()
+
+        metrics = results["metrics"]
+
+        st.success("Model trained!")
+
+        st.subheader("Validation Metrics (on 20% hold-out)")
+        st.write(f"**Accuracy:** {metrics['accuracy']:.3f}")
+        st.write(f"**Precision:** {metrics['precision']:.3f}")
+        st.write(f"**Recall:** {metrics['recall']:.3f}")
+        st.write(f"**F1-score:** {metrics['f1']:.3f}")
+
+        st.subheader("Confusion Matrix")
+        cm = metrics["confusion_matrix"]
+
+        fig, ax = plt.subplots()
+        sns.heatmap(
+            cm, annot=True, fmt = "d", 
+            xticklabels=["Pred 0 (died)", "Pred 1 (survived)"],
+            yticklabels=["Actual 0 (died)", "Actual 1 (survived)"],
+            ax=ax
+        )
+
+        ax.set_xlabel("Predicted")
+        ax.set_ylabel("Actual")
+        st.pyplot(fig)
+
+        st.subheader("Classification Report")
+        st.text(metrics["classification_report"])
+
+        st.header("3. Submission File")
+        submission = results["submission"]
+        st.write("Preview of submission: ")
+        st.dataframe(submission.head())
+
+        csv_data = submission.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label="⬇️ Download submission.csv",
+            data=csv_data,
+            file_name="submission.csv",
+            mime="text/csv",
+        )
+    else:
+        st.info("Click **Train / Retrain model** to run the pipeline and see results.")
+
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+
+
+#submission.to_csv("submission.csv", index=False)
+#print("submission.csv created successfully!")
+
+
+## Notes ##
 ## output means it is predicting one value per passenger in the test set
 # 0 = model predicts passenger did not survive
 # 1 = model predicts passenger did survive
