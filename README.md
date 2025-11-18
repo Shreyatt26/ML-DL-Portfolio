@@ -19,7 +19,7 @@ You'll find:
  - Business-oriented dashboards and reporting tools
 
 ## Technologies & Skills
- - Programming: Python, SQL, PySpark
+ - Programming: Python, R, SQL, PySpark
  - Machine Learning: scikit-learn, AWS SageMaker
  - Visualization: Tableau, Plotly, Bokeh
  - Cloud: AWS (AI Pracitioner and CCP certified)
