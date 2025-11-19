@@ -21,7 +21,7 @@ You'll find:
 ## Technologies & Skills
  - Programming: Python, R, SQL, PySpark
  - Machine Learning: scikit-learn, AWS SageMaker
- - Visualization: Tableau, Plotly, Bokeh
+ - Visualization: Tableau, Plotly
  - Cloud: AWS (AI Pracitioner and CCP certified)
 
 ## Connect With Me
