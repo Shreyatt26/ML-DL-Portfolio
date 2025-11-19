@@ -14,9 +14,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, log_loss
 
-train = pd.read_csv("C:/Users/Shreya Tanguturi/Desktop/PythonPersonalProjects/llm-classification-finetuning/train.csv")
-test = pd.read_csv("C:/Users/Shreya Tanguturi/Desktop/PythonPersonalProjects/llm-classification-finetuning/test.csv")
-sample = pd.read_csv("C:/Users/Shreya Tanguturi/Desktop/PythonPersonalProjects/llm-classification-finetuning/sample_submission.csv")
+train = pd.read_csv("C:/Users/Shreya Tanguturi/Documents/GitHub/ML-DL-Portfolio/LLMs/train.csv")
+test = pd.read_csv("C:/Users/Shreya Tanguturi/Documents/GitHub/ML-DL-Portfolio/LLMs/test.csv")
+sample = pd.read_csv("C:/Users/Shreya Tanguturi/Documents/GitHub/ML-DL-Portfolio/LLMs/sample_submission.csv")
 
 ## check data types and non-null values
 #print(train.info())
@@ -89,4 +89,68 @@ print(submission.head())
 
 ## use different models to fine-tune
 ## HuggingFace Transformers
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, Trainer, TrainingArguments
+from trl import RewardTrainer, PPOTrainer
+## trl - Transformer Reinforcement Learning
+
+## format the dataset for transformers
+## tokenize the text for the model, break down text into smaller units (tokens) so that LLM can process it
+## use a pretrained tokenizer (e.g., bert-base-uncased)
+
+tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+
+def tokenize_function(ex):
+    return tokenizer(
+        ex = ["text"],
+        padding = "max_length",
+        truncation = True,
+        max_length = 256
+    )
+
+## prepare dataset for hugging face (datasets.Dataset format)
+
+from datasets import Dataset
+
+# Convert pandas DataFrame to Hugging Face Dataset
+train_ds = Dataset.from_pandas(train)
+test_ds = Dataset.from_pandas(test)
+## split similar to sklearn
+
+# Map the tokenizer over input texts
+train_ds = train_ds.map(tokenize_function, batched=True)
+test_ds = test_ds.map(tokenize_function, batched=True)
+
+print(train_ds)
+
+## choose a model for classification -- AutoModelForSequenceClassification
+
+num_labels = len(train["winner_model_b"].unique()) ## typically 2 or 3
+model = AutoModelForSequenceClassification.from_pretrained("bert-base-uncased", num_labels = num_labels)
+
+## set up TrainingArguments and Trainer
+
+training_args = TrainingArguments(
+    output_dir="./results",
+    evaluation_strategy="epoch",
+    learning_rate=2e-5,
+    per_device_train_batch_size=8,
+    per_device_eval_batch_size=8,
+    num_train_epochs=3,
+    weight_decay=0.01
+)
+
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=train_ds,
+    eval_dataset=test_ds
+)
+
+## train the model
+trainer.Train()
+
+## evaluate and compare, use trainer.evaluate() to get accuracy, log loss, etc. and compare results to baseline logistic regression model
+
+
+## Why do transformer models generally outperform TF-IDF + logistic regression on language preference tasks?
+## What are some common pitfalls to watch for when fine-tuning large models on text data?
