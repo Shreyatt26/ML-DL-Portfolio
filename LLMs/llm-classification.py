@@ -148,6 +148,7 @@ trainer = Trainer(
 
 ## train the model
 trainer.Train()
+# print
 
 ## evaluate and compare, use trainer.evaluate() to get accuracy, log loss, etc. and compare results to baseline logistic regression model
 
