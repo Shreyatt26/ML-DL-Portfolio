@@ -148,10 +148,18 @@ trainer = Trainer(
 
 ## train the model
 trainer.Train()
-# print
 
 ## evaluate and compare, use trainer.evaluate() to get accuracy, log loss, etc. and compare results to baseline logistic regression model
-
+eval_results = trainer.evaluate()
+print("Evaluation results: ", eval_results)
 
 ## Why do transformer models generally outperform TF-IDF + logistic regression on language preference tasks?
+    # transformers are built to understand linguistic context, semantics, and word order
 ## What are some common pitfalls to watch for when fine-tuning large models on text data?
+    # overfitting: large models may memorize training data, especially if it is limited, leading to poor generalization on new prompts / responses
+    # tokenization issues: inconsistent tokenization parameters
+    # imbalanced classes: if your dataset favours one label, model may become biased.
+    # compute and resource constraints: transformer models are resource-intensive, insufficient compute limit may limit performance or make hyperparameter runs infeasible
+
+## Mitigation:
+    # apply regularization, early stopping, and augmentation to reduce overfitting
