@@ -2,7 +2,7 @@
 
 # About Me
 Hi! I'm a data analyst / analytics engineer with experience in Python, R, SQL, 
-and other visualization tools like Tableau, Plotly and Bokeh. 
+and other visualization tools like Tableau and Plotly. 
 I am also certified as a Cloud Practitioner and AI Practitioner from AWS.
 I'm passionate about applying AI and machine learning techniques to drive actionable insights, 
 build robust analytics pipelines and solve real-world business challenges.
