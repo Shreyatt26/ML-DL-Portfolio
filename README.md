@@ -10,7 +10,8 @@ build robust analytics pipelines and solve real-world business challenges.
 # Repository Overview
 This repository features a collection of my data analytics and AI projects.
 Each project focuses on working with complex datasets, developing predictive and 
-anomaly detection models, and creating interactive dashboards for stakeholder impact.
+anomaly detection models, and creating interactive dashboards for stakeholder impact. 
+This repo is a work in progress so you will see changes being made to it regularly.
 
 You'll find:
  - End-to-end analytics workflows, from data cleaning to insights
